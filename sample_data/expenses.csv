@@ -1,0 +1,39 @@
+Date,Amount,Category
+2024-01-01,-1200,Housing
+2024-01-01,-350,Food
+2024-01-01,-180,Transportation
+2024-01-01,-150,Entertainment
+2024-01-01,-120,Utilities
+2024-01-01,-80,Healthcare
+2024-01-01,-200,Shopping
+2024-01-01,-250,Debt Payment
+2024-01-01,-300,Savings
+2025-01-01,-1200,Housing
+2025-01-01,-350,Food
+2025-01-01,-180,Transportation
+2025-01-01,-200,Entertainment
+2025-01-01,-150,Utilities
+2025-01-01,-100,Healthcare
+2025-01-01,-250,Shopping
+2025-01-01,-300,Debt Payment
+2025-01-01,-400,Savings
+2025-01-01,5200,Salary
+
+2025-01-15,-100,Groceries
+2025-01-20,-60,Fuel
+2025-01-25,-120,Dining Out
+
+2025-02-01,-1200,Housing
+2025-02-01,-370,Food
+2025-02-01,-190,Transportation
+2025-02-01,-180,Entertainment
+2025-02-01,-160,Utilities
+2025-02-01,-90,Healthcare
+2025-02-01,-220,Shopping
+2025-02-01,-250,Debt Payment
+2025-02-01,-350,Savings
+2025-02-01,5200,Salary
+
+2025-02-10,-90,Groceries
+2025-02-18,-75,Fuel
+2025-02-22,-150,Dining Out
