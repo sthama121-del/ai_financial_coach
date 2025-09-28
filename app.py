@@ -294,17 +294,221 @@ class AIFinancialCoach:
             return error_message, error_dashboard
 
 # ============================================================================
+# FILE VALIDATION HELPER FUNCTIONS
+# ============================================================================
+
+def validate_uploaded_file(file_upload):
+    """Validate uploaded file and return status"""
+    if file_upload is None:
+        return "no_file", None, None
+    
+    file_path = file_upload.name
+    filename = os.path.basename(file_path)
+    
+    print(f"Validating file: {filename}")
+    
+    # Check if file exists
+    if not os.path.exists(file_path):
+        return "file_not_found", filename, "File does not exist"
+    
+    # Check file size
+    try:
+        file_size = os.path.getsize(file_path)
+        print(f"File size: {file_size} bytes")
+        
+        if file_size == 0:
+            return "empty_file", filename, "File is empty (0 bytes)"
+        elif file_size < 10:  # Very small files are likely empty or corrupted
+            return "too_small", filename, f"File is too small ({file_size} bytes)"
+    except Exception as e:
+        return "size_error", filename, f"Cannot check file size: {str(e)}"
+    
+    # Try to peek at file content for basic validation
+    try:
+        file_ext = os.path.splitext(filename)[1].lower()
+        
+        if file_ext == '.csv':
+            # Check CSV content
+            with open(file_path, 'r', encoding='utf-8') as f:
+                first_line = f.readline().strip()
+                if not first_line:
+                    return "no_content", filename, "CSV file has no content"
+                # Check if it has some reasonable content
+                if len(first_line) < 5:
+                    return "insufficient_content", filename, "CSV content appears insufficient"
+        
+        elif file_ext in ['.xlsx', '.xls']:
+            # Check Excel content
+            import pandas as pd
+            try:
+                df = pd.read_excel(file_path)
+                if df.empty:
+                    return "no_content", filename, "Excel file has no data"
+                if len(df.columns) == 0:
+                    return "no_columns", filename, "Excel file has no columns"
+            except Exception as e:
+                return "excel_error", filename, f"Cannot read Excel file: {str(e)}"
+    
+    except Exception as e:
+        return "content_error", filename, f"Cannot validate file content: {str(e)}"
+    
+    return "valid", filename, "File appears valid"
+
+# ============================================================================
 # HELPER FUNCTIONS FOR PLOTS
 # ============================================================================
 
 def analyze_finances_with_plots(file_upload, financial_goals, extra_payment):
-    """Enhanced analysis function that returns separate plot components"""
+    """Enhanced analysis function with proper file validation"""
     try:
+        # First validate the uploaded file
+        file_status, filename, message = validate_uploaded_file(file_upload)
+        
+        print(f"File validation result: {file_status} - {message}")
+        
+        # Handle different file validation results
+        if file_status == "empty_file":
+            error_report = f"""
+            ## ⚠️ **Empty File Detected**
+            
+            **Issue:** The uploaded file `{filename}` is empty (0 bytes).
+            
+            **What to do:**
+            1. Check that your file contains data
+            2. Ensure the file saved properly from your spreadsheet program
+            3. Try uploading a different file
+            4. Use the sample CSV format shown above
+            
+            **To see sample analysis:** Remove the file and click "Analyze My Finances" again.
+            """
+            
+            empty_fig = create_empty_file_plot()
+            error_html = """
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                <h3 style="color: #856404; margin: 0 0 10px 0;">📁 Empty File</h3>
+                <p style="color: #856404; margin: 0;">Please upload a file with financial data or remove the file to see sample analysis.</p>
+            </div>
+            """
+            
+            return error_report, empty_fig, empty_fig, error_html
+        
+        elif file_status == "too_small":
+            error_report = f"""
+            ## ⚠️ **File Too Small**
+            
+            **Issue:** The uploaded file `{filename}` is too small ({message}).
+            
+            **This usually means:**
+            - File is empty or nearly empty
+            - File didn't save properly
+            - File is corrupted
+            
+            **Solutions:**
+            1. Check your original file has data
+            2. Save and re-upload the file
+            3. Try a different file format (CSV recommended)
+            
+            **To see sample analysis:** Remove the file and click "Analyze My Finances" again.
+            """
+            
+            small_fig = create_small_file_plot()
+            error_html = """
+            <div style="background: #fff3cd; border: 1px solid #ffeaa7; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                <h3 style="color: #856404; margin: 0 0 10px 0;">📏 File Too Small</h3>
+                <p style="color: #856404; margin: 0;">File appears to be empty or corrupted.</p>
+            </div>
+            """
+            
+            return error_report, small_fig, small_fig, error_html
+        
+        elif file_status == "no_content":
+            error_report = f"""
+            ## 📊 **No Data Found in File**
+            
+            **Issue:** The file `{filename}` was opened but contains no financial data.
+            
+            **Common causes:**
+            - File has only headers but no data rows
+            - File is in an unexpected format
+            - Data was not saved properly
+            
+            **Expected CSV format:**
+            ```
+            Date,Amount,Category,Description
+            2024-01-01,3000,Salary,Monthly Salary
+            2024-01-02,-150,Groceries,Whole Foods
+            2024-01-03,-1200,Rent,Apartment Rent
+            ```
+            
+            **Solutions:**
+            1. Add data rows to your file
+            2. Ensure proper CSV format
+            3. Check that data saved correctly
+            
+            **To see sample analysis:** Remove the file and click "Analyze My Finances" again.
+            """
+            
+            no_data_fig = create_no_data_plot()
+            error_html = """
+            <div style="background: #e2e3e5; border: 1px solid #d6d8db; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                <h3 style="color: #383d41; margin: 0 0 10px 0;">📋 No Data</h3>
+                <p style="color: #383d41; margin: 0;">File opened but no financial data found.</p>
+            </div>
+            """
+            
+            return error_report, no_data_fig, no_data_fig, error_html
+        
+        elif file_status in ["file_not_found", "size_error", "content_error", "excel_error"]:
+            error_report = f"""
+            ## ❌ **File Processing Error**
+            
+            **Issue:** Problem processing file `{filename}`.
+            
+            **Error:** {message}
+            
+            **Solutions:**
+            1. Try uploading the file again
+            2. Save your file as CSV format
+            3. Check the file isn't corrupted
+            4. Ensure file has proper financial data
+            
+            **To see sample analysis:** Remove the file and click "Analyze My Finances" again.
+            """
+            
+            error_fig = create_error_plot(f"File error: {message}")
+            error_html = f"""
+            <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                <h3 style="color: #721c24; margin: 0 0 10px 0;">💢 Processing Error</h3>
+                <p style="color: #721c24; margin: 0;">{message}</p>
+            </div>
+            """
+            
+            return error_report, error_fig, error_fig, error_html
+        
+        # If we reach here, file is valid or no file uploaded
         coach = AIFinancialCoach()
+        
+        if file_status == "valid":
+            # File is valid, try to process it
+            print(f"File validation passed, processing {filename}")
+            file_success_note = f"✅ **File validation passed:** `{filename}` - Processing financial data...\n\n"
+        else:
+            # No file uploaded
+            print("No file uploaded, using sample data")
+            file_success_note = "📊 **Sample Data Analysis** - No file uploaded, using demonstration data.\n\n"
+        
+        # Continue with normal analysis
         report, _ = coach.analyze_finances(file_upload, financial_goals, extra_payment)
         
-        # Get financial data for plots
-        if file_upload is not None and DATA_PROCESSOR_AVAILABLE:
+        # Add file processing note at the beginning (but remove the old one if it exists)
+        if report.startswith("⚠️ Using sample data due to file processing error."):
+            # Remove the old error message since we handled validation properly
+            report = report.replace("⚠️ Using sample data due to file processing error. ", "")
+        
+        report = file_success_note + report
+        
+        # Get financial data for creating plots
+        if file_upload is not None and DATA_PROCESSOR_AVAILABLE and file_status == "valid":
             financial_data = coach.data_processor.process_document(file_upload.name)
             if "error" in financial_data:
                 financial_data = create_sample_data() if DATA_PROCESSOR_AVAILABLE else {
@@ -317,6 +521,7 @@ def analyze_finances_with_plots(file_upload, financial_goals, extra_payment):
                 'categories': {'Rent': 1200, 'Food': 400, 'Transport': 300}
             }
         
+        # Create charts
         expense_fig = create_expense_plot(financial_data)
         cashflow_fig = create_cashflow_plot(financial_data)
         metrics_html = create_metrics_summary(financial_data)
@@ -325,9 +530,30 @@ def analyze_finances_with_plots(file_upload, financial_goals, extra_payment):
         
     except Exception as e:
         print(f"Error in enhanced analysis: {e}")
+        
+        general_error_report = f"""
+        ## ❌ **Analysis Error**
+        
+        **Error:** {str(e)}
+        
+        **What happened:** An unexpected error occurred during analysis.
+        
+        **Solutions:**
+        1. Try without uploading a file (sample analysis)
+        2. Check your file format and data
+        3. Refresh the page and try again
+        4. Contact support if the problem persists
+        """
+        
         error_fig = create_error_plot(str(e))
-        error_html = f"<div style='color: red; padding: 20px;'>Error: {str(e)}</div>"
-        return f"Analysis Error: {str(e)}", error_fig, error_fig, error_html
+        error_html = f"""
+        <div style="background: #f8d7da; border: 1px solid #f5c6cb; padding: 20px; border-radius: 8px; margin: 10px 0;">
+            <h3 style="color: #721c24; margin: 0 0 10px 0;">💥 System Error</h3>
+            <p style="color: #721c24; margin: 0;">{str(e)}</p>
+        </div>
+        """
+        
+        return general_error_report, error_fig, error_fig, error_html
 
 def create_expense_plot(financial_data):
     """Create expense pie chart"""
@@ -414,8 +640,74 @@ def create_error_plot(error_message):
     except:
         return None
 
+def create_empty_file_plot():
+    """Create a plot indicating empty file"""
+    try:
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_annotation(
+            text="📁 Empty File<br>No data to display",
+            showarrow=False,
+            x=0.5, y=0.5,
+            font=dict(size=16, color="orange")
+        )
+        fig.update_layout(
+            title="File is Empty",
+            height=300,
+            showlegend=False,
+            xaxis=dict(showgrid=False, showticklabels=False),
+            yaxis=dict(showgrid=False, showticklabels=False)
+        )
+        return fig
+    except:
+        return None
+
+def create_small_file_plot():
+    """Create a plot indicating file too small"""
+    try:
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_annotation(
+            text="📏 File Too Small<br>Appears empty or corrupted",
+            showarrow=False,
+            x=0.5, y=0.5,
+            font=dict(size=16, color="orange")
+        )
+        fig.update_layout(
+            title="File Too Small",
+            height=300,
+            showlegend=False,
+            xaxis=dict(showgrid=False, showticklabels=False),
+            yaxis=dict(showgrid=False, showticklabels=False)
+        )
+        return fig
+    except:
+        return None
+
+def create_no_data_plot():
+    """Create a plot indicating no financial data found"""
+    try:
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_annotation(
+            text="📊 No Financial Data<br>Check your file format",
+            showarrow=False,
+            x=0.5, y=0.5,
+            font=dict(size=16, color="gray")
+        )
+        fig.update_layout(
+            title="No Financial Transactions Found",
+            height=300,
+            showlegend=False,
+            xaxis=dict(showgrid=False, showticklabels=False),
+            yaxis=dict(showgrid=False, showticklabels=False)
+        )
+        return fig
+    except:
+        return None
+
 # ============================================================================
-# GRADIO INTERFACE CREATION - THIS FUNCTION MUST BE AT MODULE LEVEL
+# GRADIO INTERFACE CREATION
 # ============================================================================
 
 def create_gradio_interface():
