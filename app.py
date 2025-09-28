@@ -756,14 +756,19 @@ def main():
         print("=" * 60)
         print("")
         
+        in_colab = "COLAB_RELEASE_TAG" in os.environ or "COLAB_GPU" in os.environ
+
         # Launch the Gradio app with enhanced configuration
         app.launch(
-            server_name="127.0.0.1",  # Local server only
+            #server_name="127.0.0.1",  # Local server only
+            server_name="0.0.0.0",  # Local server only
             server_port=7860,  # Standard port
-            share=False,  # Set to True for public demo links
+            share=in_colab,        # 👈 True in Colab, False locally
+            #share=False,  # Set to True for public demo links
             show_error=True,  # Show detailed errors for debugging
             quiet=False,  # Show startup logs
-            inbrowser=True  # Automatically open browser
+            #inbrowser=True  # Automatically open browser
+            inbrowser=not in_colab, # 👈 Auto-open browser only locally
         )
         
     except Exception as e:

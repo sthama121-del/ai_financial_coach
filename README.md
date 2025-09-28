@@ -1,67 +1,49 @@
 🏦 FinWise – AI Financial Coach Agent
 
-A personalized multi-agent financial advisor that analyzes income, expenses, debt, and savings to deliver actionable strategies through AI + data-driven insights.
+A personalized multi-agent financial advisor that analyzes income, expenses, debt, and savings to deliver actionable strategies using GenAI + data-driven insights.
 
 🚀 Hackathon Highlights
 
 This project demonstrates how GenAI can simplify financial planning by combining:
 
 ✅ Agent Orchestration
-
-Specialized agents for Debt Analysis, Savings Strategy, Budgeting, Payoff Optimization, and Reporting.
-
-Orchestrated together by the AI Financial Coach to provide a complete financial plan.
+Specialized agents (Debt, Savings, Budget, Payoff, Report) orchestrated together to provide a complete financial plan.
 
 ✅ Tabular RAG (Retrieval-Augmented Generation for Tables)
-
-Upload your financial documents (CSV, Excel, PDF, Word).
-
-The system extracts structured data (income, expenses, categories, transactions).
-
-LLMs reason over this tabular context to generate tailored insights.
+Upload CSV/Excel/PDF/Word → structured data is extracted → LLMs reason over this context.
 
 ✅ User Data Integration
-
-Accepts real user files (bank statements, expense sheets).
-
-Automatically adapts recommendations to your personal finances.
+Works with real financial documents (bank statements, expense sheets).
 
 ✅ LLM Workflow
-
-Uses LangChain + OpenAI for personalized financial insights.
-
-Includes rule-based fallbacks to ensure the app works even without an API key.
+LangChain + OpenAI for personalized insights, with rule-based fallbacks if no API key is available.
 
 ✅ Live Dashboarding
-
-Interactive dashboards with Plotly + Streamlit/Gradio.
-
-Real-time cash flow, category breakdown, health score, and savings analysis.
+Interactive dashboards (Plotly + Streamlit/Gradio) for cash flow, category breakdown, savings, and health scores.
 
 🧠 Key Features
-🏦 Financial Agents
 
-Debt Analyzer Agent → debt ratios, payoff strategies (snowball vs avalanche).
+🏦 Debt Analyzer → Ratios, payoff strategies (snowball vs avalanche).
 
-Savings Strategy Agent → emergency funds, automation plans, investment guidance.
+💰 Savings Strategist → Emergency funds, automation, investments.
 
-Budget Advisor Agent → 50/30/20 rule, overspending detection, optimization tips.
+📋 Budget Advisor → 50/30/20 rule, overspending alerts, optimization tips.
 
-Optimized Payoff Agent → compares debt payoff strategies with extra payments.
+🎯 Payoff Optimizer → Compare extra payment scenarios.
 
-Financial Report Agent → combines outputs into a structured report.
+📊 Report Generator → Full financial summary & action plan.
 
 ⚙️ Technical Capabilities
 
-Tabular data ingestion + transaction processing.
+Tabular ingestion & transaction processing.
 
-Rule-based fallback when API not available.
+AI-enhanced insights (when API key set).
 
-AI-enhanced personalization when API is active.
+Rule-based fallback (works even offline).
 
-Interactive visualizations (Plotly + Gradio).
+Live dashboards with Plotly + Gradio.
 
-Modular architecture with robust error handling.
+Modular architecture with error handling.
 
 📦 Installation & Setup
 Prerequisites
@@ -71,46 +53,42 @@ Python 3.8+
 Virtual environment recommended
 
 Quick Start
-# 1. Clone the project
-git clone <your_repo_url>
+# 1. Clone the repo
+git clone https://github.com/sthama121-del/ai_financial_coach.git
 cd ai_financial_coach
 
-# 2. Create and activate virtual environment
+# 2. Create & activate environment
 python -m venv finwise_env
 source finwise_env/bin/activate   # Windows: finwise_env\Scripts\activate
 
 # 3. Install dependencies
 pip install -r requirements.txt
 
-# 4. Launch the app
+# 4. Run the app
 streamlit run app.py
 
 ▶️ Running the Project
 
-Option 1: Command Line Test
+Option 1 – Command Line Test
 
 python agents.py
 
 
-Runs all agents with sample data.
-
-Option 2: Web Interface (Recommended)
+Option 2 – Web App (Recommended)
 
 streamlit run app.py
 
 
-Open browser at http://localhost:7860
+Opens at: http://localhost:7860
 
-Upload your CSV/Excel/PDF, or use built-in sample data.
+Option 3 – Component Tests
 
-Option 3: Component Testing
-
-python data_processor.py   # Test document processing
-python visualizer.py       # Test dashboards
+python data_processor.py   # Document ingestion
+python visualizer.py       # Dashboards
 
 📊 Sample Data
 
-Example CSV format (included in /sample_data):
+Example CSV (in /sample_data):
 
 Date,Amount,Category
 2025-01-01,5200,Salary
@@ -121,82 +99,63 @@ Date,Amount,Category
 2025-01-01,-300,Savings
 
 
-Positive = income
+Positive = Income
 
-Negative = expense
+Negative = Expense
 
-More 2024–2025 datasets are included for testing.
-
-✅ Expected Output
-
-Debt Analysis → debt-to-income ratio, payoff strategies, action plan
-
-Savings Strategy → emergency fund, automation plan, investment goals
-
-Budget Analysis → 50/30/20 allocation, overspending alerts
-
-Debt Payoff Plan → snowball vs avalanche with extra payments
-
-Comprehensive Report → combined agent insights
-
-Dashboard → expense breakdown, health score, cash flow trends
+More 2024–2025 datasets included.
 
 🔑 AI Features
 
-Enable AI analysis by setting your key:
+Enable full AI analysis by adding your key:
 
 export OPENAI_API_KEY="sk-your-key-here"
 
 
-Without key → Rule-based analysis (always works).
+Without key → Rule-based mode (always works).
 
-With key → Full AI-powered recommendations.
+With key → Full AI-powered insights.
 
 📂 Project Structure
 ai_financial_coach/
-├── agents.py            # Core financial agents
-├── app.py               # Main web interface (Gradio + Streamlit)
-├── data_processor.py    # Document ingestion and processing
-├── visualizer.py        # Charts and dashboards
-├── requirements.txt     # Dependencies
-├── sample_data/         # Sample files for testing
-└── README.md            # Documentation
+├── agents.py          # Core AI financial agents
+├── app.py             # Main app (Gradio + Streamlit)
+├── data_processor.py  # Data ingestion
+├── visualizer.py      # Dashboards & charts
+├── requirements.txt   # Dependencies
+├── sample_data/       # Example CSVs
+└── README.md          # Documentation
 
-🛠️ Key Technologies
+🛠️ Tech Stack
 
-LangChain + OpenAI → AI orchestration & insights
+LangChain + OpenAI → AI orchestration
 
-Pandas → data processing
+Pandas → Data processing
 
-Streamlit + Gradio → interactive UI
+Streamlit + Gradio → Web interface
 
-Plotly → visualizations
+Plotly → Visualizations
 
-PyPDF2, python-docx, openpyxl → multi-format document parsing
+PyPDF2, python-docx, openpyxl → File parsing
 
-🎯 Hackathon Learning Outcomes
+👩‍🏫 Demo Instructions (for Hackathon Evaluators)
 
-Build multi-agent AI systems with modular orchestration
-
-Apply RAG + LLMs to financial decision support
-
-Design resilient apps with fallbacks (AI or rule-based)
-
-Show how GenAI can automate financial advisory
-
-👩‍🏫 Demo Instructions (for Evaluators)
-
-Run the app:
+Run:
 
 streamlit run app.py
 
 
-Upload a sample CSV (or use built-in data).
+Upload sample CSV (or your own financial file).
 
-Walk through outputs:
-
+Walk through results:
 Debt → Savings → Budget → Payoff → Report → Dashboard
 
-Highlight: multi-agent orchestration + live dashboarding + AI enhancement
+Highlight:
 
-✨ FinWise AI – turning complex finances into clear, actionable advice.
+Multi-agent orchestration
+
+Live dashboarding
+
+AI personalization
+
+✨ FinWise AI – Turning complex finances into clear, actionable advice.
