@@ -297,6 +297,104 @@ class AIFinancialCoach:
 # FILE VALIDATION HELPER FUNCTIONS
 # ============================================================================
 
+def validate_financial_content(financial_data, file_path):
+    """Validate that extracted data actually represents financial information"""
+    
+    # Check the actual file content for context clues
+    try:
+        file_content = ""
+        file_ext = os.path.splitext(file_path)[1].lower()
+        
+        if file_ext == '.pdf':
+            # Read PDF content to check for non-financial keywords
+            try:
+                import PyPDF2
+                with open(file_path, 'rb') as file:
+                    pdf_reader = PyPDF2.PdfReader(file)
+                    # Read first few pages
+                    for page_num in range(min(3, len(pdf_reader.pages))):
+                        file_content += pdf_reader.pages[page_num].extract_text()
+            except:
+                pass
+        elif file_ext == '.csv':
+            # Read CSV content
+            try:
+                with open(file_path, 'r', encoding='utf-8') as file:
+                    file_content = file.read()
+            except:
+                pass
+        elif file_ext in ['.xlsx', '.xls']:
+            # Read Excel content
+            try:
+                import pandas as pd
+                df = pd.read_excel(file_path)
+                file_content = df.to_string()
+            except:
+                pass
+    except:
+        file_content = ""
+    
+    # Convert to lowercase for analysis
+    content_lower = file_content.lower()
+    
+    # Check for non-financial content indicators
+    educational_keywords = [
+        'course', 'session', 'learning', 'training', 'education', 'curriculum',
+        'bootcamp', 'workshop', 'seminar', 'lecture', 'chapter', 'lesson',
+        'instructor', 'student', 'professor', 'university', 'college',
+        'prerequisites', 'syllabus', 'assignment', 'homework', 'exam',
+        'modern ai pro', 'ai essentials', 'machine learning', 'neural network',
+        'transformer', 'llm', 'gpt', 'artificial intelligence'
+    ]
+    
+    # Count educational keywords
+    educational_count = sum(1 for keyword in educational_keywords if keyword in content_lower)
+    
+    # Check for financial keywords
+    financial_keywords = [
+        'transaction', 'payment', 'deposit', 'withdrawal', 'balance', 
+        'expense', 'income', 'salary', 'bill', 'purchase', 'debit', 
+        'credit', 'bank', 'account', 'receipt', 'invoice', 'spending',
+        'budget', 'money', 'dollar', 'cost', 'price', 'fee'
+    ]
+    
+    financial_count = sum(1 for keyword in financial_keywords if keyword in content_lower)
+    
+    # Analyze the extracted financial data
+    income = financial_data.get('total_income', 0)
+    expenses = financial_data.get('total_expenses', 0)
+    categories = financial_data.get('categories', {})
+    
+    # Red flags that indicate non-financial content:
+    
+    # Strong educational content indicators
+    if educational_count >= 5:
+        return False, f"Document appears to be educational content ({educational_count} educational keywords found)"
+    
+    # Very low income with zero expenses - likely extracted metadata
+    if income < 500 and expenses == 0:
+        return False, "Financial amounts appear to be extracted metadata rather than actual transactions"
+    
+    # No meaningful categories
+    if len(categories) == 0:
+        return False, "No expense categories found in document"
+    
+    # Categories contain non-financial terms
+    category_text = ' '.join(str(categories).lower().split())
+    non_financial_indicators = ['pdf', 'page', 'section', 'chapter', 'course', 'session', 'notebook']
+    if any(indicator in category_text for indicator in non_financial_indicators):
+        return False, "Categories appear to contain document metadata rather than financial categories"
+    
+    # If we found educational keywords but very few financial keywords
+    if educational_count > financial_count and educational_count >= 3:
+        return False, f"Document appears to be educational ({educational_count} educational vs {financial_count} financial keywords)"
+    
+    # Income is suspiciously specific small amounts (like page numbers)
+    if income in [75, 36, 35, 34, 33, 32, 31, 30] and expenses == 0:
+        return False, "Income amount appears to be a page number or document metadata"
+    
+    return True, "Content appears to contain financial data"
+
 def validate_uploaded_file(file_upload):
     """Validate uploaded file and return status"""
     if file_upload is None:
@@ -489,8 +587,50 @@ def analyze_finances_with_plots(file_upload, financial_goals, extra_payment):
         coach = AIFinancialCoach()
         
         if file_status == "valid":
-            # File is valid, try to process it
+            # File is valid, try to process it and validate content
             print(f"File validation passed, processing {filename}")
+            
+            # Process the file and check if it contains actual financial data
+            if DATA_PROCESSOR_AVAILABLE:
+                financial_data = coach.data_processor.process_document(file_upload.name)
+                
+                if "error" not in financial_data:
+                    # NEW: Validate that this is actually financial content
+                    is_financial, validation_message = validate_financial_content(financial_data, file_upload.name)
+                    
+                    if not is_financial:
+                        error_report = f"""
+                        ## 📄 **Non-Financial Content Detected**
+                        
+                        **Issue:** The file `{filename}` appears to contain non-financial content.
+                        
+                        **Detection:** {validation_message}
+                        
+                        **This file appears to be:**
+                        - Educational or course material
+                        - Documentation or manual
+                        - General text document
+                        - Other non-financial content
+                        
+                        **For financial analysis, please upload:**
+                        - Bank statements (CSV/Excel)
+                        - Expense tracking spreadsheets  
+                        - Budget documents
+                        - Transaction records
+                        
+                        **Sample Analysis:** Remove the file and click "Analyze" to see how financial analysis works with sample data.
+                        """
+                        
+                        non_financial_fig = create_non_financial_plot()
+                        error_html = """
+                        <div style="background: #e3f2fd; border: 1px solid #90caf9; padding: 20px; border-radius: 8px; margin: 10px 0;">
+                            <h3 style="color: #1565c0; margin: 0 0 10px 0;">📄 Non-Financial Content</h3>
+                            <p style="color: #1565c0; margin: 0;">This appears to be educational/documentation content, not financial data.</p>
+                        </div>
+                        """
+                        
+                        return error_report, non_financial_fig, non_financial_fig, error_html
+            
             file_success_note = f"✅ **File validation passed:** `{filename}` - Processing financial data...\n\n"
         else:
             # No file uploaded
@@ -697,6 +837,28 @@ def create_no_data_plot():
         )
         fig.update_layout(
             title="No Financial Transactions Found",
+            height=300,
+            showlegend=False,
+            xaxis=dict(showgrid=False, showticklabels=False),
+            yaxis=dict(showgrid=False, showticklabels=False)
+        )
+        return fig
+    except:
+        return None
+
+def create_non_financial_plot():
+    """Create a plot indicating non-financial content detected"""
+    try:
+        import plotly.graph_objects as go
+        fig = go.Figure()
+        fig.add_annotation(
+            text="📄 Non-Financial Content<br>Upload financial data instead",
+            showarrow=False,
+            x=0.5, y=0.5,
+            font=dict(size=16, color="blue")
+        )
+        fig.update_layout(
+            title="Non-Financial Content Detected",
             height=300,
             showlegend=False,
             xaxis=dict(showgrid=False, showticklabels=False),
