@@ -258,14 +258,13 @@ class FinancialVisualizer:
             fig = go.Figure(data=[go.Pie(
                 labels=list(expense_categories.keys()),
                 values=list(expense_categories.values()),
-                hole=0.3,  # Donut chart
+                hole=0.3,
                 marker_colors=self.color_palette,
                 textinfo='label+percent',
                 textposition='auto',
                 hovertemplate='<b>%{label}</b><br>Amount: $%{value:,.2f}<br>Percentage: %{percent}<extra></extra>'
             )])
             
-            # Professional styling
             fig.update_layout(
                 title={
                     'text': "💸 Monthly Expense Breakdown",
@@ -275,20 +274,18 @@ class FinancialVisualizer:
                 },
                 font=dict(size=14),
                 showlegend=True,
-                legend=dict(
-                    orientation="v",
-                    yanchor="middle",
-                    y=0.5,
-                    xanchor="left",
-                    x=1.05
-                ),
                 margin=dict(l=20, r=120, t=60, b=20),
                 height=400,
                 plot_bgcolor='white',
                 paper_bgcolor='white'
             )
             
-            return fig.to_html(include_plotlyjs=True, div_id="expense_pie_chart")
+            config = {'displayModeBar': True, 'displaylogo': False}
+            return fig.to_html(
+                include_plotlyjs='cdn',
+                config=config,
+                div_id="expense_pie_chart"
+            )
             
         except Exception as e:
             print(f"❌ Interactive pie chart failed: {e}")
@@ -398,42 +395,52 @@ class FinancialVisualizer:
     def _create_interactive_cash_flow(self, income: float, expenses: float, net_savings: float) -> str:
         """💰 Interactive cash flow chart with Plotly"""
         
-        categories = ['💰 Monthly Income', '💸 Monthly Expenses', '💎 Available for Savings']
-        values = [income, -expenses, net_savings]
-        colors = [
-            '#28a745',  # Green for income
-            '#dc3545',  # Red for expenses  
-            '#007bff' if net_savings >= 0 else '#dc3545'  # Blue/red for savings
-        ]
-        
-        fig = go.Figure()
-        
-        fig.add_trace(go.Bar(
-            x=categories,
-            y=values,
-            marker_color=colors,
-            text=[f'${abs(val):,.0f}' for val in values],
-            textposition='auto',
-            textfont=dict(size=16, color='white', family='Arial Black'),
-            hovertemplate='<b>%{x}</b><br>Amount: $%{y:,.2f}<extra></extra>'
-        ))
-        
-        fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5)
-        
-        fig.update_layout(
-            title={
-                'text': "💰 Monthly Cash Flow Overview",
-                'x': 0.5,
-                'xanchor': 'center',
-                'font': {'size': 20, 'color': '#2E86AB'}
-            },
-            yaxis_title="Amount ($)",
-            yaxis=dict(tickformat='$,.0f', gridcolor='lightgray'),
-            plot_bgcolor='white',
-            height=400
-        )
-        
-        return fig.to_html(include_plotlyjs=True, div_id="cash_flow_chart")
+        try:
+            categories = ['💰 Monthly Income', '💸 Monthly Expenses', '💎 Available for Savings']
+            values = [income, -expenses, net_savings]
+            colors = [
+                '#28a745',  # Green for income
+                '#dc3545',  # Red for expenses  
+                '#007bff' if net_savings >= 0 else '#dc3545'  # Blue/red for savings
+            ]
+            
+            fig = go.Figure()
+            
+            fig.add_trace(go.Bar(
+                x=categories,
+                y=values,
+                marker_color=colors,
+                text=[f'${abs(val):,.0f}' for val in values],
+                textposition='auto',
+                textfont=dict(size=16, color='white', family='Arial Black'),
+                hovertemplate='<b>%{x}</b><br>Amount: $%{y:,.2f}<extra></extra>'
+            ))
+            
+            fig.add_hline(y=0, line_dash="dash", line_color="gray", opacity=0.5)
+            
+            fig.update_layout(
+                title={
+                    'text': "💰 Monthly Cash Flow Overview",
+                    'x': 0.5,
+                    'xanchor': 'center',
+                    'font': {'size': 20, 'color': '#2E86AB'}
+                },
+                yaxis_title="Amount ($)",
+                yaxis=dict(tickformat='$,.0f', gridcolor='lightgray'),
+                plot_bgcolor='white',
+                height=400
+            )
+            
+            config = {'displayModeBar': True, 'displaylogo': False}
+            return fig.to_html(
+                include_plotlyjs='cdn',
+                config=config,
+                div_id="cash_flow_chart"
+            )
+            
+        except Exception as e:
+            print(f"❌ Interactive cash flow failed: {e}")
+            raise
     
     def _create_static_cash_flow(self, income: float, expenses: float, net_savings: float) -> str:
         """📊 Static cash flow chart with Matplotlib"""
