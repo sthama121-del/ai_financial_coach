@@ -1,173 +1,203 @@
-# FinWise AI - Multi-Agent Financial Coach
+# AI Financial Coach � Multi-Agent Financial Advisor
 
-A personalized multi-agent financial advisor that analyzes income, expenses, debt, and savings to deliver actionable strategies using GenAI + data-driven insights.
+> A personalized multi-agent financial advisor that analyzes income, expenses, debt, and savings to deliver actionable strategies using GenAI and data-driven insights.
 
-## Hackathon Highlights
+[![Python](https://img.shields.io/badge/Python-3.8%2B-blue)](https://www.python.org/)
+[![LangChain](https://img.shields.io/badge/LangChain-0.2.16-orange)](https://langchain.com/)
+[![Gradio](https://img.shields.io/badge/Gradio-4.x-green)](https://gradio.app/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o--mini-purple)](https://openai.com/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-This project demonstrates how GenAI can simplify financial planning by combining:
+---
 
-**Agent Orchestration**  
-Specialized agents (Debt, Savings, Budget, Payoff, Report) orchestrated together to provide a complete financial plan.
+## Problem Statement
 
-**Tabular RAG (Retrieval-Augmented Generation for Tables)**  
-Upload CSV/Excel/PDF/Word → structured data is extracted → LLMs reason over this context.
+Personal financial planning is complex, fragmented, and inaccessible. Most people lack the expertise to simultaneously analyze their debt structure, optimize savings strategies, and build realistic budgets. Generic financial tools apply one-size-fits-all rules that ignore individual financial profiles.
 
-**User Data Integration**  
-Works with real financial documents (bank statements, expense sheets) with intelligent content validation.
+This system implements a multi-agent architecture where five specialized AI agents collaborate to deliver a complete, personalized financial plan from any uploaded financial document � CSV, Excel, PDF, or Word.
 
-**LLM Workflow**  
-LangChain + OpenAI for personalized insights, with rule-based fallbacks if no API key is available.
+---
 
-**Live Dashboarding**  
-Interactive dashboards (Plotly + Gradio) for cash flow, category breakdown, savings, and health scores.
+## Architecture
 
-## Key Features
+Document Upload (CSV, Excel, PDF, Word)
+          |
+          v
+Data Processor
+  - Tabular ingestion and transaction parsing
+  - Content validation (rejects non-financial documents)
+  - Structured financial profile extraction
+          |
+          v
+Multi-Agent Orchestration (LangChain)
+  |
+  |-- DebtAnalyzerAgent      -> Debt ratios, payoff strategies
+  |-- SavingsStrategyAgent   -> Emergency funds, automation plans
+  |-- BudgetAdvisorAgent     -> 50/30/20 rule, overspending alerts
+  |-- OptimizedPayoffAgent   -> Snowball vs avalanche comparison
+  |-- FinancialReportAgent   -> Full summary and action plan
+          |
+          v
+AI Layer
+  Primary:  OpenAI GPT-4o-mini (when API key present)
+  Fallback: Rule-based analysis (works fully offline)
+          |
+          v
+Web Interface + Dashboards
+  Gradio web app + Plotly interactive charts
+  Cash flow, category breakdown, savings progress, financial health score
 
-**Debt Analyzer** → Ratios, payoff strategies (snowball vs avalanche)
+---
 
-**Savings Strategist** → Emergency funds, automation, investments
+## Tech Stack
 
-**Budget Advisor** → 50/30/20 rule, overspending alerts, optimization tips
+| Component | Technology | Purpose |
+|-----------|-----------|---------|
+| Agent Orchestration | LangChain | Multi-agent coordination |
+| LLM | OpenAI GPT-4o-mini | AI-powered financial insights |
+| Web Interface | Gradio | Interactive web application |
+| Visualizations | Plotly | Interactive dashboards |
+| Data Processing | Pandas | Transaction analysis |
+| Document Parsing | PyPDF2, python-docx, openpyxl | Multi-format ingestion |
+| Fallback Engine | Rule-based analysis | Works without API key |
+| Language | Python 3.8+ | Core runtime |
 
-**Payoff Optimizer** → Compare extra payment scenarios
+---
 
-**Report Generator** → Full financial summary & action plan
+## Agents
 
-**Smart File Validation** → Detects and rejects non-financial content (educational docs, manuals, etc.)
+### DebtAnalyzerAgent
+Calculates debt-to-income ratios, identifies high-interest liabilities, and recommends payoff sequencing using snowball and avalanche strategies.
 
-## Technical Capabilities
+### SavingsStrategyAgent
+Evaluates current savings rate against income, recommends emergency fund targets, and suggests automation strategies based on cash flow patterns.
 
-- Tabular ingestion & transaction processing
-- AI-enhanced insights (when API key set)
-- Rule-based fallback (works even offline)
-- Live dashboards with Plotly + Gradio
-- Modular architecture with comprehensive error handling
-- Content validation to prevent misanalysis of non-financial documents
+### BudgetAdvisorAgent
+Applies the 50/30/20 framework to categorize spending, identifies overspending patterns, and generates optimization recommendations.
 
-## Installation & Setup
+### OptimizedPayoffAgent
+Runs scenario analysis comparing extra payment strategies � quantifies interest savings and time-to-payoff across different approaches.
+
+### FinancialReportAgent
+Aggregates outputs from all agents into a cohesive financial health report with a prioritized action plan.
+
+---
+
+## Getting Started
 
 ### Prerequisites
 - Python 3.8+
-- Virtual environment recommended
+- OpenAI API key (optional � app works without it in rule-based mode)
 
-### Quick Start
+### Installation
 
-```bash
-# 1. Clone the repo
-git clone https://github.com/sthama121-del/ai_financial_coach.git
-cd ai_financial_coach
+Clone the repository:
+  git clone https://github.com/sthama121-del/ai_financial_coach.git
+  cd ai_financial_coach
 
-# 2. Create & activate environment
-python -m venv finwise_env
-source finwise_env/bin/activate   # Windows: finwise_env\Scripts\activate
+Create virtual environment:
+  python -m venv .venv
 
-# 3. Install dependencies
-pip install -r requirements.txt
+Activate on Windows:
+  .venv\Scripts\activate
 
-# 4. Run the app
-python app.py
-```
+Activate on macOS/Linux:
+  source .venv/bin/activate
 
-## Running the Project
+Install dependencies:
+  pip install -r requirements.txt
 
-**Option 1 – Web App (Recommended)**
-```bash
-python app.py
-```
-Opens at: http://localhost:7860
+### Running the Application
 
-**Option 2 – Command Line Test**
-```bash
-python agents.py
-```
+  python app.py
 
-**Option 3 – Component Tests**
-```bash
-python data_processor.py   # Document ingestion
-python visualizer.py       # Dashboards
-```
+Navigate to http://localhost:7860 in your browser.
 
-## Sample Data
+### Optional � Enable AI Mode
 
-Example CSV format (samples in `/sample_data`):
+  export OPENAI_API_KEY="sk-your-key-here"
 
-```csv
+Without key: rule-based analysis (always works)
+With key: full GPT-4o-mini powered insights
+
+---
+
+## Usage
+
+1. Launch the app and open http://localhost:7860
+2. Upload a financial file (CSV, Excel, PDF, or Word)
+3. The system validates the document and extracts transactions
+4. All five agents run in sequence and generate their analysis
+5. View the interactive dashboard and download the full report
+
+### Sample CSV Format
+
 Date,Amount,Category,Description
 2025-01-01,5200,Salary,Monthly Salary
 2025-01-01,-1200,Housing,Rent Payment
 2025-01-01,-350,Food,Groceries
-2025-01-01,-200,Entertainment,Movies & Dining
-2025-01-01,-250,Debt Payment,Credit Card
+2025-01-01,-250,Debt Payment,Credit Card Minimum
 2025-01-01,-300,Savings,Emergency Fund
-```
 
-**Format Rules:**
-- Positive amounts = Income
-- Negative amounts = Expenses
-- Additional 2024–2025 datasets included
+Positive amounts = income, negative amounts = expenses.
+Sample files are available in the sample_data/ folder.
 
-## AI Features
+---
 
-Enable full AI analysis by adding your OpenAI API key:
+## Key Capabilities
 
-```bash
-export OPENAI_API_KEY="sk-your-key-here"
-```
+- Multi-format document ingestion � CSV, Excel, PDF, Word
+- Intelligent content validation � rejects non-financial documents with clear error messages
+- Five specialized agents working in coordination via LangChain
+- Graceful degradation � full functionality without an API key
+- Interactive Plotly dashboards � cash flow, spending breakdown, savings trajectory
+- Modular architecture � each agent can be tested and extended independently
 
-**Without key** → Rule-based mode (always works)  
-**With key** → Full AI-powered insights
+---
+
+## Business Value
+
+| Dimension | Impact |
+|-----------|--------|
+| Accessibility | Democratizes financial planning for non-experts |
+| Flexibility | Works with any financial document format |
+| Reliability | Rule-based fallback ensures 100% uptime without API dependency |
+| Extensibility | Modular agent design � new agents can be added without refactoring |
+| Cost efficiency | GPT-4o-mini minimizes inference costs vs GPT-4 |
+
+---
+
+## Future Enhancements
+
+- Bank API integration � connect directly to financial accounts via Plaid
+- Goal tracking � set and monitor savings/debt payoff milestones over time
+- Multi-currency support � handle international financial documents
+- Scheduled reports � automated monthly financial health summaries
+- RAG over historical data � query past transactions in natural language
+- Azure deployment � containerized deployment on Azure Container Apps
+
+---
 
 ## Project Structure
 
-```
 ai_financial_coach/
-├── agents.py          # Core AI financial agents
-├── app.py             # Main Gradio web application
-├── data_processor.py  # Data ingestion & validation
-├── visualizer.py      # Dashboards & charts
-├── requirements.txt   # Dependencies
-├── sample_data/       # Example CSV files
-└── README.md          # Documentation
-```
+  agents.py           Five specialized AI financial agents
+  app.py              Main Gradio web application
+  data_processor.py   Document ingestion and validation
+  visualizer.py       Plotly dashboards and charts
+  requirements.txt    Python dependencies
+  sample_data/        Example CSV files for testing
+  README.md           This file
 
-## Tech Stack
+---
 
-- **LangChain + OpenAI** → AI orchestration
-- **Pandas** → Data processing
-- **Gradio** → Web interface
-- **Plotly** → Interactive visualizations
-- **PyPDF2, python-docx, openpyxl** → File parsing
+## Author
 
-## Demo Instructions (for Hackathon Evaluators)
+Srikanth � Senior Data Engineer / AI Engineer
+Specializing in agentic AI systems, GenAI pipelines, and data engineering.
 
-1. **Start the application:**
-   ```bash
-   python app.py
-   ```
+---
 
-2. **Upload sample data:**
-   - Use provided CSV from `/sample_data/` folder
-   - Or upload your own financial file
+## License
 
-3. **Walk through results:**
-   - Debt Analysis → Savings Strategy → Budget Advice → Payoff Plan → Comprehensive Report → Interactive Dashboard
-
-4. **Test file validation:**
-   - Try uploading a non-financial document (PDF, Word doc)
-   - Observe intelligent rejection with clear error messages
-
-5. **Highlight key features:**
-   - Multi-agent orchestration
-   - Live interactive dashboarding
-   - AI personalization with fallback modes
-   - Smart content validation
-
-## Key Differentiators
-
-- **Multi-Agent Architecture:** Five specialized AI agents working together
-- **Intelligent File Validation:** Detects and rejects educational content, manuals, and other non-financial documents
-- **Graceful Degradation:** Works with or without API keys
-- **Real Document Processing:** Handles CSV, Excel, PDF, and Word formats
-- **Interactive Visualizations:** Live charts that update with your data
-
-FinWise AI - Turning complex finances into clear, actionable advice through intelligent multi-agent analysis.
+MIT License � free to use, modify, and distribute.
